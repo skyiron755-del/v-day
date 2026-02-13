@@ -1,36 +1,376 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Will you be my Valentine? 💕</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>A Letter For You 💌</title>
+    <meta name="description" content="A special Valentine's letter, wrapped in love." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;600;700&family=Quicksand:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;1,400;1,600&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
-    <div class="hearts-bg"></div>
 
-    <div class="container">
-        <h1>Will you be my Valentine? 💕</h1>
+    <!-- Falling hearts container -->
+    <div id="hearts-container" aria-hidden="true"></div>
 
-        <div class="gif-container">
-            <img id="cat-gif" src="https://media.tenor.com/EBV7OT7ACfwAAAAj/u-u-qua-qua-u-quaa.gif" alt="cute character">
+    <!-- Sparkle overlay for letter reveal -->
+    <div id="sparkle-overlay" aria-hidden="true"></div>
+
+    <!-- Music toggle -->
+    <button id="music-toggle" class="music-btn playing" onclick="toggleMusic()" title="Toggle music">
+        <span id="music-icon">�</span>
+    </button>
+
+    <!-- ==================== SCREENS ==================== -->
+
+    <!-- SPLASH: Click to enter -->
+    <div id="screen-splash" class="screen active">
+        <div class="card glass-card fade-in splash-card" onclick="enterSite()">
+            <p class="card-emoji">💌</p>
+            <h1 class="card-title">Someone left something for you…</h1>
+            <p class="card-subtitle">Tap anywhere to enter</p>
+            <div class="splash-hint">🎵 Best experienced with sound on</div>
         </div>
-
-        <div class="buttons">
-            <button id="yes-btn" onclick="handleYesClick()">Yes</button>
-            <button id="no-btn" onclick="handleNoClick()">No</button>
-        </div>
-        <div id="tease-toast"></div>
     </div>
 
-    <audio id="bg-music" loop autoplay muted>
-        <source src="music/beabadoobee - Glue Song (Lyrics).mp3" type="audio/mpeg">
-    </audio>
+    <!-- SCREEN 0: Initial Prompt -->
+    <div id="screen-initial" class="screen">
+        <div class="card glass-card fade-in">
+            <p class="card-emoji">💌</p>
+            <h1 class="card-title">You have a letter…</h1>
+            <p class="card-subtitle">Someone left this for you. What would you like to do?</p>
+            <div class="btn-row">
+                <button id="btn-open-1" class="btn btn-open" onclick="handleOpen(1)">Open it</button>
+                <button id="btn-nope-1" class="btn btn-nope" onclick="handleNope(1)">Nah, I'm good</button>
+            </div>
+        </div>
+    </div>
 
-    <button id="music-toggle" onclick="toggleMusic()" title="Toggle music">🔊</button>
+    <!-- ===== "NOPE" PATH — convincing them TO open ===== -->
+
+    <div id="screen-nope-1" class="screen">
+        <div class="card glass-card fade-in">
+            <p class="card-emoji">🥺</p>
+            <h1 class="card-title">Wait, really?</h1>
+            <p class="card-subtitle">Someone poured their heart into this letter…<br>You're just going to leave it
+                unopened?</p>
+            <div class="btn-row">
+                <button class="btn btn-open" onclick="handleOpen(1)">Okay fine, open it</button>
+                <button class="btn btn-nope btn-shrink-1" onclick="handleNope(2)">Still no</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="screen-nope-2" class="screen">
+        <div class="card glass-card fade-in">
+            <p class="card-emoji">😢</p>
+            <h1 class="card-title">Are you sure sure?</h1>
+            <p class="card-subtitle">The envelope is literally trembling right now.<br>It's never been rejected before.
+                This is its first heartbreak.</p>
+            <div class="btn-row">
+                <button class="btn btn-open pulse" onclick="handleOpen(1)">Open it, I'm sorry 💕</button>
+                <button class="btn btn-nope btn-shrink-2" onclick="handleNope(3)">I said no</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="screen-nope-3" class="screen">
+        <div class="card glass-card fade-in">
+            <p class="card-emoji">😭</p>
+            <h1 class="card-title">You're breaking its little paper heart!</h1>
+            <p class="card-subtitle">The letter inside has been waiting just for <em>you</em>.<br>It practiced what it
+                was going to say and everything…</p>
+            <div class="btn-row">
+                <button class="btn btn-open pulse" onclick="handleOpen(1)">Okay okay, open it! 💗</button>
+                <button class="btn btn-nope btn-shrink-3 btn-runaway" id="nope-runaway" onclick="handleNope(4)">No means
+                    no</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="screen-nope-4" class="screen">
+        <div class="card glass-card fade-in">
+            <p class="card-emoji">💀</p>
+            <h1 class="card-title">The envelope has fainted.</h1>
+            <p class="card-subtitle">It's lying on the floor dramatically.<br>Only you can revive it. One click. That's
+                all it takes.</p>
+            <div class="btn-row">
+                <button class="btn btn-open pulse glow" onclick="handleOpen(1)">Fine. FINE. Open it. 💖</button>
+                <button class="btn btn-nope btn-shrink-4 btn-runaway" id="nope-runaway-2"
+                    onclick="handleNope(5)">…no</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="screen-nope-5" class="screen">
+        <div class="card glass-card fade-in">
+            <p class="card-emoji">👻</p>
+            <h1 class="card-title">The envelope's ghost is haunting you now.</h1>
+            <p class="card-subtitle">"Oooooo… open meeeee…"<br>You can't escape love. It's literally floating behind
+                you.</p>
+            <div class="btn-row">
+                <button class="btn btn-open pulse glow big-btn" onclick="handleOpen(1)">I SURRENDER 💘 Open it!</button>
+            </div>
+            <p class="card-whisper">(The "no" button ran away. It couldn't take the rejection either.)</p>
+        </div>
+    </div>
+
+    <!-- ===== "OPEN" PATH — convincing them NOT to open ===== -->
+
+    <div id="screen-open-1" class="screen">
+        <div class="card glass-card fade-in">
+            <p class="card-emoji">⚠️</p>
+            <h1 class="card-title">Hold on a second!</h1>
+            <p class="card-subtitle">Are you <em>emotionally prepared</em> for this?<br>This letter contains dangerous
+                levels of affection. Proceed with caution.</p>
+            <div class="btn-row">
+                <button class="btn btn-nope" onclick="handleDontOpen(1)">Maybe I shouldn't…</button>
+                <button class="btn btn-open" onclick="handleOpen(2)">I'm ready. Open it.</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="screen-open-2" class="screen">
+        <div class="card glass-card fade-in">
+            <p class="card-emoji">🫣</p>
+            <h1 class="card-title">Last chance to turn back!</h1>
+            <p class="card-subtitle">Side effects of reading this letter may include:<br>✨ Butterflies · 💓 Heart
+                palpitations · 😊 Uncontrollable smiling</p>
+            <div class="btn-row">
+                <button class="btn btn-nope" onclick="handleDontOpen(2)">That sounds dangerous…</button>
+                <button class="btn btn-open" onclick="handleOpen(3)">I'll take my chances 💪</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="screen-open-3" class="screen">
+        <div class="card glass-card fade-in">
+            <p class="card-emoji">🔐</p>
+            <h1 class="card-title">This letter is sealed with love.</h1>
+            <p class="card-subtitle">Once opened, there's no going back.<br>Your heart <em>will</em> be touched. This is
+                not a drill.</p>
+            <div class="btn-row">
+                <button class="btn btn-nope" onclick="handleDontOpen(3)">I'm scared 🙈</button>
+                <button class="btn btn-open" onclick="handleOpen(4)">Open. It. Now. 💌</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="screen-open-4" class="screen">
+        <div class="card glass-card fade-in">
+            <p class="card-emoji">🫀</p>
+            <h1 class="card-title">Your heart rate is rising…</h1>
+            <p class="card-subtitle">The envelope can feel your anticipation.<br>It's blushing. Literally turning pink.
+                Look at it.</p>
+            <div class="btn-row">
+                <button class="btn btn-nope" onclick="handleDontOpen(4)">Okay I'm not ready 😳</button>
+                <button class="btn btn-open pulse" onclick="handleOpen(5)">JUST OPEN IT ALREADY 💥</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="screen-open-5" class="screen">
+        <div class="card glass-card fade-in">
+            <p class="card-emoji">✨</p>
+            <h1 class="card-title">Okay… deep breath.</h1>
+            <p class="card-subtitle">This is it. The moment of truth.<br>Ready?</p>
+            <div class="btn-row">
+                <button class="btn btn-open pulse glow big-btn" onclick="revealLetter()">💌 Read the letter 💌</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== "DON'T OPEN" PATH (from Open path) — boomerangs back ===== -->
+
+    <div id="screen-dontopen-1" class="screen">
+        <div class="card glass-card fade-in">
+            <p class="card-emoji">😏</p>
+            <h1 class="card-title">Ha! You almost had the courage.</h1>
+            <p class="card-subtitle">It's okay, love is scary sometimes.<br>But you came this far… might as well keep
+                going?</p>
+            <div class="btn-row">
+                <button class="btn btn-open" onclick="handleOpen(2)">You're right. Open it.</button>
+                <button class="btn btn-nope" onclick="handleDontOpen(5)">Nope, I'm out</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="screen-dontopen-2" class="screen">
+        <div class="card glass-card fade-in">
+            <p class="card-emoji">🤔</p>
+            <h1 class="card-title">But what if it's the most beautiful thing you've ever read?</h1>
+            <p class="card-subtitle">You'd never know. That thought would haunt you.<br>Every quiet night. Every sunset.
+                <em>What was in the letter?</em>
+            </p>
+            <div class="btn-row">
+                <button class="btn btn-open pulse" onclick="handleOpen(3)">Ugh, fine. Open it.</button>
+                <button class="btn btn-nope btn-shrink-1" onclick="handleDontOpen(5)">I can live with mystery</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="screen-dontopen-3" class="screen">
+        <div class="card glass-card fade-in">
+            <p class="card-emoji">💔</p>
+            <h1 class="card-title">The letter just whispered your name.</h1>
+            <p class="card-subtitle">I'm not even joking. It knows you're here.<br>It's been waiting. Patiently.
+                Lovingly. Don't leave it hanging.</p>
+            <div class="btn-row">
+                <button class="btn btn-open pulse glow" onclick="handleOpen(4)">Okay that's sweet. Open it. 🥹</button>
+                <button class="btn btn-nope btn-shrink-2" onclick="handleDontOpen(5)">Letters can't whisper</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="screen-dontopen-4" class="screen">
+        <div class="card glass-card fade-in">
+            <p class="card-emoji">🌹</p>
+            <h1 class="card-title">A rose just fell out of the envelope.</h1>
+            <p class="card-subtitle">It rolled to your feet and looked up at you.<br>With its little rose eyes.
+                Pleading.</p>
+            <div class="btn-row">
+                <button class="btn btn-open pulse glow big-btn" onclick="handleOpen(5)">I CAN'T SAY NO TO A ROSE
+                    🌹</button>
+                <button class="btn btn-nope btn-shrink-3" onclick="handleDontOpen(5)">Roses don't have eyes</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="screen-dontopen-5" class="screen">
+        <div class="card glass-card fade-in">
+            <p class="card-emoji">🥀</p>
+            <h1 class="card-title">The envelope is crying now.</h1>
+            <p class="card-subtitle">Real paper tears. This is what you wanted?<br>Just open it. You know you want to.
+                Deep down. Way deep down.</p>
+            <div class="btn-row">
+                <button class="btn btn-open pulse glow big-btn" onclick="handleOpen(5)">OKAY I'LL OPEN IT 😭💕</button>
+            </div>
+            <p class="card-whisper">(Even the "don't open" button left. It was tired of your games.)</p>
+        </div>
+    </div>
+
+    <!-- ===== THE LETTER ===== -->
+
+    <div id="screen-letter" class="screen">
+        <!-- Envelope (will fade out) -->
+        <div class="envelope-wrapper" id="envelope-wrapper">
+            <div class="envelope" id="envelope">
+                <div class="envelope-flap" id="envelope-flap"></div>
+                <div class="envelope-body">
+                    <!-- Cute cat couple SVG -->
+                    <svg class="envelope-cats" viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Black cat -->
+                        <g transform="translate(55, 20)">
+                            <!-- Body -->
+                            <ellipse cx="25" cy="85" rx="22" ry="28" fill="#2d2d2d" />
+                            <!-- Head -->
+                            <circle cx="25" cy="50" r="18" fill="#333" />
+                            <!-- Ears -->
+                            <polygon points="10,38 7,18 20,32" fill="#333" />
+                            <polygon points="40,38 43,18 30,32" fill="#333" />
+                            <polygon points="12,36 10,22 19,31" fill="#4a4a4a" />
+                            <polygon points="38,36 40,22 31,31" fill="#4a4a4a" />
+                            <!-- Eyes -->
+                            <ellipse cx="19" cy="48" rx="4" ry="4.5" fill="#7ecfc0" />
+                            <ellipse cx="31" cy="48" rx="4" ry="4.5" fill="#7ecfc0" />
+                            <ellipse cx="19" cy="48" rx="2" ry="3" fill="#1a1a1a" />
+                            <ellipse cx="31" cy="48" rx="2" ry="3" fill="#1a1a1a" />
+                            <!-- Nose & mouth -->
+                            <ellipse cx="25" cy="55" rx="2.5" ry="1.8" fill="#f4a0b0" />
+                            <path d="M25,56.5 Q22,60 20,58" fill="none" stroke="#555" stroke-width="0.8" />
+                            <path d="M25,56.5 Q28,60 30,58" fill="none" stroke="#555" stroke-width="0.8" />
+                            <!-- Whiskers -->
+                            <line x1="5" y1="52" x2="15" y2="53" stroke="#666" stroke-width="0.6" />
+                            <line x1="5" y1="56" x2="15" y2="55" stroke="#666" stroke-width="0.6" />
+                            <line x1="35" y1="53" x2="45" y2="52" stroke="#666" stroke-width="0.6" />
+                            <line x1="35" y1="55" x2="45" y2="56" stroke="#666" stroke-width="0.6" />
+                            <!-- Tail curving toward orange cat -->
+                            <path d="M47,85 Q60,60 55,45" fill="none" stroke="#2d2d2d" stroke-width="5"
+                                stroke-linecap="round" />
+                        </g>
+                        <!-- Orange cat -->
+                        <g transform="translate(105, 20)">
+                            <!-- Body -->
+                            <ellipse cx="25" cy="85" rx="22" ry="28" fill="#e8874a" />
+                            <!-- Stripes on body -->
+                            <path d="M12,70 Q25,65 38,70" fill="none" stroke="#cc6b30" stroke-width="2" opacity="0.5" />
+                            <path d="M10,80 Q25,75 40,80" fill="none" stroke="#cc6b30" stroke-width="2" opacity="0.5" />
+                            <path d="M12,90 Q25,85 38,90" fill="none" stroke="#cc6b30" stroke-width="2" opacity="0.5" />
+                            <!-- Head -->
+                            <circle cx="25" cy="50" r="18" fill="#f09050" />
+                            <!-- Ears -->
+                            <polygon points="10,38 7,18 20,32" fill="#f09050" />
+                            <polygon points="40,38 43,18 30,32" fill="#f09050" />
+                            <polygon points="12,36 10,22 19,31" fill="#f4a870" />
+                            <polygon points="38,36 40,22 31,31" fill="#f4a870" />
+                            <!-- Eyes -->
+                            <ellipse cx="19" cy="48" rx="4" ry="4.5" fill="#7ecfc0" />
+                            <ellipse cx="31" cy="48" rx="4" ry="4.5" fill="#7ecfc0" />
+                            <ellipse cx="19" cy="48" rx="2" ry="3" fill="#1a1a1a" />
+                            <ellipse cx="31" cy="48" rx="2" ry="3" fill="#1a1a1a" />
+                            <!-- Nose & mouth -->
+                            <ellipse cx="25" cy="55" rx="2.5" ry="1.8" fill="#f4a0b0" />
+                            <path d="M25,56.5 Q22,60 20,58" fill="none" stroke="#b06030" stroke-width="0.8" />
+                            <path d="M25,56.5 Q28,60 30,58" fill="none" stroke="#b06030" stroke-width="0.8" />
+                            <!-- Whiskers -->
+                            <line x1="5" y1="52" x2="15" y2="53" stroke="#cc8050" stroke-width="0.6" />
+                            <line x1="5" y1="56" x2="15" y2="55" stroke="#cc8050" stroke-width="0.6" />
+                            <line x1="35" y1="53" x2="45" y2="52" stroke="#cc8050" stroke-width="0.6" />
+                            <line x1="35" y1="55" x2="45" y2="56" stroke="#cc8050" stroke-width="0.6" />
+                            <!-- Tail curving away -->
+                            <path d="M3,85 Q-15,60 -5,45" fill="none" stroke="#e8874a" stroke-width="5"
+                                stroke-linecap="round" />
+                        </g>
+                        <!-- Heart between them -->
+                        <g transform="translate(92, 8)">
+                            <path d="M8,4 C8,0 0,-2 0,4 C0,8 8,14 8,14 C8,14 16,8 16,4 C16,-2 8,0 8,4 Z" fill="#e91e63"
+                                opacity="0.8">
+                                <animate attributeName="opacity" values="0.8;1;0.8" dur="2s" repeatCount="indefinite" />
+                                <animateTransform attributeName="transform" type="scale" values="1;1.15;1" dur="1.5s"
+                                    repeatCount="indefinite" additive="sum" origin="8 7" />
+                            </path>
+                        </g>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Letter (will expand to fill screen) -->
+        <div class="letter-fullscreen" id="letter">
+            <div class="letter-paper" id="letter-paper">
+                <div class="letter-content">
+                    <p class="letter-greeting">For You,</p>
+                    <p>The sun pulls its gold from the hem of the hills,</p>
+                    <p>and the shadows lengthen, reaching for a rest</p>
+                    <p>they can only find in the stillness of your shadow.</p>
+                    <p>The world is vast, a sea of moving parts and noise,</p>
+                    <p>yet I have narrowed my world down to a single point,</p>
+                    <p>a quiet coordinate where every road must end.</p>
+                    <div class="letter-break"></div>
+                    <p>I do not look at the stars to find my way anymore,</p>
+                    <p>nor do I listen to the wind to hear a ghost of meaning.</p>
+                    <p>Instead, I lean into the silence we have built,</p>
+                    <p>a house of glass and grace where I am finally known.</p>
+                    <p>There is no part of me that is not colored by your light;</p>
+                    <p>you are my sight, you are my thoughts, you are my heart.</p>
+                    <div class="letter-break"></div>
+                    <p>It is a beautiful weight, this longing I carry for you,</p>
+                    <p>heavy like the scent of rain before it meets the dust.</p>
+                    <p>I am held by the invisible tether of your name,</p>
+                    <p>falling upward, forever, into the calm of your soul.</p>
+                    <p class="letter-signature">— With all my love 💕</p>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="script.js"></script>
 </body>
+
 </html>

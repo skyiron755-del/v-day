@@ -1,145 +1,190 @@
-const gifStages = [
-    "https://media.tenor.com/EBV7OT7ACfwAAAAj/u-u-qua-qua-u-quaa.gif",    // 0 normal
-    "https://media1.tenor.com/m/uDugCXK4vI4AAAAd/chiikawa-hachiware.gif",  // 1 confused
-    "https://media.tenor.com/f_rkpJbH1s8AAAAj/somsom1012.gif",             // 2 pleading
-    "https://media.tenor.com/OGY9zdREsVAAAAAj/somsom1012.gif",             // 3 sad
-    "https://media1.tenor.com/m/WGfra-Y_Ke0AAAAd/chiikawa-sad.gif",       // 4 sadder
-    "https://media.tenor.com/CivArbX7NzQAAAAj/somsom1012.gif",             // 5 devastated
-    "https://media.tenor.com/5_tv1HquZlcAAAAj/chiikawa.gif",               // 6 very devastated
-    "https://media1.tenor.com/m/uDugCXK4vI4AAAAC/chiikawa-hachiware.gif"  // 7 crying runaway
-]
+/* ============================================
+   VALENTINE ENVELOPE — JavaScript
+   ============================================ */
 
-const noMessages = [
-    "No",
-    "Are you positive? 🤔",
-    "Pookie please... 🥺",
-    "If you say no, I will be really sad...",
-    "I will be very sad... 😢",
-    "Please??? 💔",
-    "Don't do this to me...",
-    "Last chance! 😭",
-    "You can't catch me anyway 😜"
-]
+// --- Background Music (Katabi by BINI) ---
+let musicPlaying = false;
+let musicStarted = false;
+const bgMusic = new Audio('katabi.mp3.mp3');
+bgMusic.loop = true;
+bgMusic.volume = 0.4;
 
-const yesTeasePokes = [
-    "try saying no first... I bet you want to know what happens 😏",
-    "go on, hit no... just once 👀",
-    "you're missing out 😈",
-    "click no, I dare you 😏"
-]
+function startMusic() {
+    bgMusic.play().then(() => {
+        musicPlaying = true;
+        musicStarted = true;
+        document.getElementById('music-icon').textContent = '🔊';
+        document.getElementById('music-toggle').classList.add('playing');
+    }).catch(() => {
+        // Browser blocked autoplay — will retry on next interaction
+        musicStarted = false;
+    });
+}
 
-let yesTeasedCount = 0
-
-let noClickCount = 0
-let runawayEnabled = false
-let musicPlaying = true
-
-const catGif = document.getElementById('cat-gif')
-const yesBtn = document.getElementById('yes-btn')
-const noBtn = document.getElementById('no-btn')
-const music = document.getElementById('bg-music')
-
-// Autoplay: audio starts muted (bypasses browser policy), unmute immediately
-music.muted = true
-music.volume = 0.3
-music.play().then(() => {
-    music.muted = false
-}).catch(() => {
-    // Fallback: unmute on first interaction
-    document.addEventListener('click', () => {
-        music.muted = false
-        music.play().catch(() => {})
-    }, { once: true })
-})
+function stopMusic() {
+    bgMusic.pause();
+    musicPlaying = false;
+    document.getElementById('music-icon').textContent = '🔇';
+    document.getElementById('music-toggle').classList.remove('playing');
+}
 
 function toggleMusic() {
     if (musicPlaying) {
-        music.pause()
-        musicPlaying = false
-        document.getElementById('music-toggle').textContent = '🔇'
+        stopMusic();
     } else {
-        music.muted = false
-        music.play()
-        musicPlaying = true
-        document.getElementById('music-toggle').textContent = '🔊'
+        musicPlaying = true;
+        musicStarted = true;
+        bgMusic.play();
+        document.getElementById('music-icon').textContent = '🔊';
+        document.getElementById('music-toggle').classList.add('playing');
     }
 }
 
-function handleYesClick() {
-    if (!runawayEnabled) {
-        // Tease her to try No first
-        const msg = yesTeasePokes[Math.min(yesTeasedCount, yesTeasePokes.length - 1)]
-        yesTeasedCount++
-        showTeaseMessage(msg)
-        return
-    }
-    window.location.href = 'yes.html'
+// --- Enter Site (splash screen click starts music) ---
+function enterSite() {
+    startMusic();
+    showScreen('screen-initial');
 }
 
-function showTeaseMessage(msg) {
-    let toast = document.getElementById('tease-toast')
-    toast.textContent = msg
-    toast.classList.add('show')
-    clearTimeout(toast._timer)
-    toast._timer = setTimeout(() => toast.classList.remove('show'), 2500)
-}
+const heartColors = [
+    '#f48fb1', '#f06292', '#ec407a', '#e91e63',
+    '#ce93d8', '#ba68c8', '#ab47bc',
+    '#ef9a9a', '#e57373', '#ff8a80',
+    '#ffcdd2', '#f8bbd0', '#fce4ec',
+    '#ff80ab', '#ff4081', '#f50057',
+    '#e1bee7', '#d1c4e9', '#c5cae9'
+];
 
-function handleNoClick() {
-    noClickCount++
+const heartShapes = ['❤️', '💕', '💗', '💖', '💓', '💘', '💝', '♥', '🩷', '🤍', '🩵'];
 
-    // Cycle through guilt-trip messages
-    const msgIndex = Math.min(noClickCount, noMessages.length - 1)
-    noBtn.textContent = noMessages[msgIndex]
+function createFallingHeart() {
+    const container = document.getElementById('hearts-container');
+    const heart = document.createElement('span');
+    heart.classList.add('falling-heart');
 
-    // Grow the Yes button bigger each time
-    const currentSize = parseFloat(window.getComputedStyle(yesBtn).fontSize)
-    yesBtn.style.fontSize = `${currentSize * 1.35}px`
-    const padY = Math.min(18 + noClickCount * 5, 60)
-    const padX = Math.min(45 + noClickCount * 10, 120)
-    yesBtn.style.padding = `${padY}px ${padX}px`
-
-    // Shrink No button to contrast
-    if (noClickCount >= 2) {
-        const noSize = parseFloat(window.getComputedStyle(noBtn).fontSize)
-        noBtn.style.fontSize = `${Math.max(noSize * 0.85, 10)}px`
+    // Random heart style
+    const useEmoji = Math.random() > 0.35;
+    if (useEmoji) {
+        heart.textContent = heartShapes[Math.floor(Math.random() * heartShapes.length)];
+        heart.style.fontSize = (Math.random() * 20 + 12) + 'px';
+    } else {
+        const size = Math.random() * 16 + 8;
+        const color = heartColors[Math.floor(Math.random() * heartColors.length)];
+        heart.innerHTML = `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="${color}"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`;
     }
 
-    // Swap cat GIF through stages
-    const gifIndex = Math.min(noClickCount, gifStages.length - 1)
-    swapGif(gifStages[gifIndex])
+    heart.style.left = Math.random() * 100 + '%';
+    const duration = Math.random() * 6 + 5;
+    heart.style.animationDuration = duration + 's';
+    heart.style.animationDelay = Math.random() * 2 + 's';
+    heart.style.opacity = Math.random() * 0.5 + 0.3;
 
-    // Runaway starts at click 5
-    if (noClickCount >= 5 && !runawayEnabled) {
-        enableRunaway()
-        runawayEnabled = true
-    }
-}
+    container.appendChild(heart);
 
-function swapGif(src) {
-    catGif.style.opacity = '0'
     setTimeout(() => {
-        catGif.src = src
-        catGif.style.opacity = '1'
-    }, 200)
+        heart.remove();
+    }, (duration + 3) * 1000);
 }
 
-function enableRunaway() {
-    noBtn.addEventListener('mouseover', runAway)
-    noBtn.addEventListener('touchstart', runAway, { passive: true })
+// Spawn hearts continuously
+setInterval(createFallingHeart, 400);
+// Initial burst
+for (let i = 0; i < 15; i++) {
+    setTimeout(createFallingHeart, i * 200);
 }
 
-function runAway() {
-    const margin = 20
-    const btnW = noBtn.offsetWidth
-    const btnH = noBtn.offsetHeight
-    const maxX = window.innerWidth - btnW - margin
-    const maxY = window.innerHeight - btnH - margin
-
-    const randomX = Math.random() * maxX + margin / 2
-    const randomY = Math.random() * maxY + margin / 2
-
-    noBtn.style.position = 'fixed'
-    noBtn.style.left = `${randomX}px`
-    noBtn.style.top = `${randomY}px`
-    noBtn.style.zIndex = '50'
+// --- Sparkle Effect ---
+function createSparkles(count) {
+    const overlay = document.getElementById('sparkle-overlay');
+    for (let i = 0; i < count; i++) {
+        setTimeout(() => {
+            const sparkle = document.createElement('div');
+            sparkle.classList.add('sparkle');
+            sparkle.style.left = Math.random() * 100 + '%';
+            sparkle.style.top = Math.random() * 100 + '%';
+            sparkle.style.width = (Math.random() * 8 + 4) + 'px';
+            sparkle.style.height = sparkle.style.width;
+            overlay.appendChild(sparkle);
+            setTimeout(() => sparkle.remove(), 1200);
+        }, i * 80);
+    }
 }
+
+// --- Screen Navigation ---
+function showScreen(screenId) {
+    document.querySelectorAll('.screen').forEach(s => {
+        s.classList.remove('active');
+    });
+    const target = document.getElementById(screenId);
+    if (target) {
+        // Re-trigger the fade-in animation
+        const card = target.querySelector('.glass-card');
+        if (card) {
+            card.classList.remove('fade-in');
+            void card.offsetWidth; // force reflow
+            card.classList.add('fade-in');
+        }
+        target.classList.add('active');
+    }
+}
+
+// --- "Nope/Don't open" path: They refuse to open; we convince them TO open ---
+function handleNope(step) {
+    createSparkles(8);
+    showScreen('screen-nope-' + step);
+}
+
+// --- "Open" path: They want to open; we tease them to NOT open first ---
+function handleOpen(step) {
+    createSparkles(10);
+    showScreen('screen-open-' + step);
+}
+
+// --- "Don't open" from the open path: They reconsider opening ---
+function handleDontOpen(step) {
+    createSparkles(6);
+    showScreen('screen-dontopen-' + step);
+}
+
+// --- Reveal the Letter ---
+function revealLetter() {
+    createSparkles(40);
+    showScreen('screen-letter');
+
+    // Step 1: Open the envelope flap
+    setTimeout(() => {
+        const flap = document.getElementById('envelope-flap');
+        flap.classList.add('open');
+        createSparkles(15);
+
+        // Step 2: Fade out the envelope
+        setTimeout(() => {
+            const envelopeWrapper = document.getElementById('envelope-wrapper');
+            envelopeWrapper.classList.add('fade-out');
+
+            // Step 3: Show the full-screen letter
+            setTimeout(() => {
+                const letter = document.getElementById('letter');
+                letter.classList.add('visible');
+                createSparkles(30);
+
+                // Ongoing gentle sparkles while reading
+                const sparkleInterval = setInterval(() => createSparkles(5), 2500);
+                setTimeout(() => clearInterval(sparkleInterval), 25000);
+            }, 400);
+        }, 1000);
+    }, 600);
+}
+
+// --- Runaway Button Logic ---
+document.addEventListener('DOMContentLoaded', () => {
+    const runawayBtns = document.querySelectorAll('.btn-runaway');
+    runawayBtns.forEach(btn => {
+        btn.addEventListener('mouseenter', () => {
+            const rx = (Math.random() - 0.5) * 2;
+            const ry = (Math.random() - 0.5) * 2;
+            btn.style.setProperty('--runaway-x', rx);
+            btn.style.setProperty('--runaway-y', ry);
+        });
+    });
+});
